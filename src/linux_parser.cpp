@@ -105,14 +105,37 @@ long LinuxParser::UpTime() {
   return time;
 }
 
-// TODO: Read and return the number of jiffies for the system
+// Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { 
   return  ActiveJiffies() + IdleJiffies();
 }
 
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { return 0; }
+// Read and return the number of active jiffies for a PID
+long LinuxParser::ActiveJiffies(int pid) { 
+
+  // https://stackoverflow.com/questions/39066998/what-are-the-meaning-of-values-at-proc-pid-stat
+  long int utime, stime, cutime, cstime;
+  long activeJiffies {-1};
+  std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  if(filestream.is_open())
+  {
+    string line, useless_token;
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+
+    for(int i = 0; i < 13; ++i)
+    {
+      linestream >> useless_token;
+    }
+
+    // 14 -> utime, 15 -> stime, 16 -> cutime, 17-> cstime
+    linestream >> utime >> stime >> cutime >> cstime;
+
+    activeJiffies = (utime + stime + cutime + cstime) / sysconf(_SC_CLK_TCK);
+  }
+
+  return activeJiffies; 
+}
 
 // Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() {

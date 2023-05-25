@@ -31,6 +31,8 @@ vector<Process>& System::Processes() {
         processes_.push_back(proc);
     }
 
+    sort(processes_.rbegin(), processes_.rend());
+    
     return processes_; 
 }
 
