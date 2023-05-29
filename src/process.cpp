@@ -16,7 +16,6 @@ using std::vector;
 Process::Process(int pid) : pid_(pid)
 {
   command_ = LinuxParser::Command(pid_);
-  ram_ = LinuxParser::Ram(pid_);
   user_ = LinuxParser::User(pid_);
 
 }
@@ -45,7 +44,7 @@ float Process::CpuUtilization() const{
 string Process::Command() { return command_; }
 
 // Return this process's memory utilization
-string Process::Ram() { return ram_; }
+string Process::Ram() { return LinuxParser::Ram(pid_); }
 
 // Return the user (name) that generated this process
 string Process::User() { return user_; }

@@ -20,7 +20,6 @@ class Process {
  private:
   int pid_{0};
   std::string user_{""};
-  std::string ram_{"0%"};
   std::string command_{""};
 };
 

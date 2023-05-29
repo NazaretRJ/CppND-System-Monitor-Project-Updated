@@ -1,4 +1,17 @@
 #include "processor.h"
+#include "linux_parser.h"
+// Return the aggregate CPU utilization
+float Processor::Utilization() {
+    
+    float activeJiff = LinuxParser::ActiveJiffies();
+    float iddleJiff = LinuxParser::IdleJiffies();
 
-// TODO: Return the aggregate CPU utilization
-float Processor::Utilization() { return 0.0; }
+    float util {0.0f};
+
+    if (activeJiff + iddleJiff > 0.0f)
+    {
+        return activeJiff / (activeJiff + iddleJiff);
+    }
+
+    return util;
+}
