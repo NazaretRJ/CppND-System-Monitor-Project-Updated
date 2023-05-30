@@ -28,6 +28,9 @@ vector<Process>& System::Processes() {
     for(unsigned int i = 0; i < pids.size() && i < 10; ++i)
     {
         Process proc(pids[i]);
+        //you do not need to call the constructor when inserting an element using emplace_back into the vector of some class 
+        //if the constructor of the class has an appropriate definition that can be called on that set of arguments!
+        //So this line can be replaced with: processes_.emplace_back(pid);
         processes_.push_back(proc);
     }
 

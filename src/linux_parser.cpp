@@ -24,12 +24,13 @@ string LinuxParser::OperatingSystem() {
       std::replace(line.begin(), line.end(), '"', ' ');
       std::istringstream linestream(line);
       while (linestream >> key >> value) {
-        if (key == "PRETTY_NAME") {
+        if (key == filterOperatingSystem) {
           std::replace(value.begin(), value.end(), '_', ' ');
           return value;
         }
       }
     }
+    filestream.close();
   }
   return value;
 }
@@ -43,6 +44,8 @@ string LinuxParser::Kernel() {
     std::getline(stream, line);
     std::istringstream linestream(line);
     linestream >> os >> version >> kernel;
+
+    stream.close();
   }
   return kernel;
 }
@@ -86,6 +89,8 @@ float LinuxParser::MemoryUtilization() {
     memoryFree = std::stoi(memory);
 
     memoryUtilization = (memoryTotal - memoryFree) / memoryTotal;
+
+    filestream.close();
   }
 
   return memoryUtilization;
@@ -101,6 +106,8 @@ long LinuxParser::UpTime() {
     std::getline(filestream, line);
     std::istringstream linestream(line);
     linestream >> time;
+
+    filestream.close();
   }
   return std::stol(time);
 }
@@ -132,6 +139,8 @@ long LinuxParser::ActiveJiffies(int pid) {
     linestream >> utime >> stime >> cutime >> cstime;
 
     activeJiffies = (utime + stime + cutime + cstime) / sysconf(_SC_CLK_TCK);
+
+    filestream.close();
   }
 
   return activeJiffies; 
@@ -172,6 +181,7 @@ vector<string> LinuxParser::CpuUtilization() {
     while (linestream >> value) {
       jiffies.push_back(value);
     }
+    stream.close();
   }
 
   return jiffies;
@@ -193,6 +203,7 @@ string findValueInFileByKey(string path, string formatedKey) {
         }
       }
     }
+    filestream.close();
   }
 
   return "";
@@ -201,7 +212,7 @@ string findValueInFileByKey(string path, string formatedKey) {
 // Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
   string value =
-      findValueInFileByKey(kProcDirectory + kStatFilename, "processes");
+      findValueInFileByKey(kProcDirectory + kStatFilename, filterProcesses);
   if (!value.empty()) {
     return std::stoi(value);
   } else {
@@ -212,7 +223,7 @@ int LinuxParser::TotalProcesses() {
 // Read and return the number of running processes
 int LinuxParser::RunningProcesses() {
   string value =
-      findValueInFileByKey(kProcDirectory + kStatFilename, "procs_running");
+      findValueInFileByKey(kProcDirectory + kStatFilename, filterRunningProcesses);
   if (!value.empty()) {
     return std::stoi(value);
   } else {
@@ -230,6 +241,8 @@ string LinuxParser::Command(int pid) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
     linestream >> command;
+
+    filestream.close();
   }
 
   return command; 
@@ -238,7 +251,11 @@ string LinuxParser::Command(int pid) {
 
 // Read and return the memory used by a process
 string LinuxParser::Ram(int pid) {
-  string vmSize = findValueInFileByKey(kProcDirectory + std::to_string(pid) + kStatusFilename, "VmSize:");
+  // VmSize is the sum of all the virtual memory
+  // VmRSS gives the exact physical memory being used as a part of Physical RAM
+  // following the Udacity guidelines, It is used VmSize 
+
+  string vmSize = findValueInFileByKey(kProcDirectory + std::to_string(pid) + kStatusFilename, filterProcMem);
   int ram = 0;
   if(!vmSize.empty())
   {
@@ -251,7 +268,7 @@ string LinuxParser::Ram(int pid) {
 
 // Read and return the user ID associated with a process
 string LinuxParser::Uid(int pid) { 
-  string uid = findValueInFileByKey(kProcDirectory + std::to_string(pid) + kStatusFilename, "Uid:");
+  string uid = findValueInFileByKey(kProcDirectory + std::to_string(pid) + kStatusFilename, filterUID);
   return uid;
 }
 
@@ -278,6 +295,7 @@ string LinuxParser::User(int pid) {
         }
       }
     }
+    filestream.close();
   }
 
   return name;
@@ -300,6 +318,7 @@ long LinuxParser::UpTime(int pid) {
 
     uptime = std::stol(field) / sysconf(_SC_CLK_TCK);
 
+    filestream.close();
   }
   
   return uptime; 
